@@ -222,7 +222,7 @@
    - Add more items by copying a line and incrementing image filename (product11.jpg, etc.)
 =============================================================== */
 const PRODUCTS = [
-  { id: 'p', name: '6.2kw 48v•mppt 60v-450v•hybrid inverter', price: 346000, imageURL: 'product.jpg' },
+  { id: 'p', name: '6.2kw 48v•mppt 60v-450v•hybrid inverter•Lithium wake up function', price: 346000, imageURL: 'product.jpg' },
   { id: 'p0', name: 'Healing for Ulcers', price: 1000, imageURL: 'product0.jpg' },
   { id: 'p1', name: 'Healing for Infertility', price: 2000, imageURL: 'product1.jpg' },
   { id: 'p2', name: 'Healing for HIV', price: 5000, imageURL: 'product2.jpg' },
@@ -305,7 +305,7 @@ profileImg.addEventListener('click', ()=>{
       currentUser = currentUser || {};
       currentUser.profilePicDataURL = dataUrl;
       saveUser();
-      showToast('Profile picture updated locally 🌿','success');
+      showToast('Profile picture updated locally ','success');
     };
     r.readAsDataURL(file);
   };
@@ -443,8 +443,8 @@ document.addEventListener('click', (e)=>{
   if(e.target.classList.contains('product-buy')){
     const name = e.target.dataset.name;
     const email = (currentUser && currentUser.email) ? currentUser.email : 'guest@example.com';
-    const msg = encodeURIComponent(`Hello Nature Heals, I want to buy "${name}". My email: ${email}. How do I make payment?`);
-    window.open(`https://wa.me/15813419686?text=${msg}`, '_blank');
+    const msg = encodeURIComponent(`Hello Yingfa Risen, I want to buy "${name}". My email: ${email}. How do I make payment?`);
+    window.open(`https://wa.me/2348098740140?text=${msg}`, '_blank');
   }
   if(e.target.classList.contains('removeItem')){
     const idx = Number(e.target.dataset.idx);
@@ -456,8 +456,8 @@ document.getElementById('checkoutBtn').addEventListener('click', ()=> {
   if(cart.length===0){ showPopup('Cart empty','Your cart is empty','info'); return; }
   const names = cart.map(i=>i.name).join(', ');
   const email = (currentUser && currentUser.email) ? currentUser.email : 'guest@example.com';
-  const msg = encodeURIComponent(`Hello Nature Heals, I want to checkout: ${names}. My email: ${email}. How do I pay?`);
-  window.open(`https://wa.me/15813419686?text=${msg}`, '_blank');
+  const msg = encodeURIComponent(`Hello Yingfa Risen, I want to checkout: ${names}. My email: ${email}. How do I pay?`);
+  window.open(`https://wa.me/2348098740140?text=${msg}`, '_blank');
 });
 
 /* Close overlays on outside click */
