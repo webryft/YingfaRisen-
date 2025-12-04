@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Nature Heals — Gallery</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;600;800&display=swap" rel="stylesheet">
+<!-- SweetAlert2 -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<style>
+  :root{--bg:#f6fff6;--accent:#16a34a;--muted:#234e3a;--card:#ffffff}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:'Poppins',sans-serif;background:var(--bg);color:var(--muted)}
+  header{display:flex;align-items:center;gap:10px;padding:10px 14px;background:#e6fff1;flex-wrap:wrap;position:sticky;top:0;z-index:50;border-bottom:1px solid rgba(0,0,0,0.04)}
+  .left{display:flex;align-items:center;gap:8px;min-width:0}
+  .menuBtn{cursor:pointer;font-size:20px;padding:6px}
+  .title{font-weight:800;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .searchWrap{display:flex;align-items:center;background:#fff;border-radius:14px;padding:6px 8px;flex:1;max-width:520px}
+  .searchWrap input{border:none;outline:none;width:100%;font-size:14px;padding:6px}
+  .menuRight{display:flex;align-items:center;gap:10px;margin-left:auto}
+  .flag{font-size:18px;cursor:pointer}
+  .profile-pic{width:36px;height:36px;border-radius:50%;object-fit:cover;cursor:pointer;border:2px solid rgba(0,0,0,0.04)}
+  .cart{position:relative;cursor:pointer;font-weight:900;font-size:18px}
+  .cartBadge{position:absolute;top:-6px;right:-10px;background:red;color:white;border-radius:10px;padding:2px 6px;font-size:12px}
+  .hero{margin:12px;border-radius:12px;overflow:hidden;border:1px solid rgba(0,0,0,0.04);position:relative;height:360px;background:#dff6e9}
+  .hero img{width:100%;height:100%;object-fit:cover;display:block}
+  .heroOverlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:18px;text-align:center;color:#fff;background:linear-gradient(180deg,rgba(0,0,0,0.15),rgba(0,0,0,0.25))}
+  .heroOverlay h1{margin:0;font-size:26px;font-weight:900}
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* always 3 columns */
+  gap: 5px;
+  padding: 18px;
+  max-width: 1300px;
+  margin: 0 auto;
+}@media (max-width: 900px) {
+  .grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 600px) {
+  .grid { grid-template-columns: 1fr; }
+}
+
+
+
+  .card{background:var(--card);padding:10px;border-radius:12px;box-shadow:0 6px 18px rgba(0,0,0,0.05);transition:transform .15s}
+  .card:hover{transform:translateY(-4px)}
+  .card img{width:100%;height:320px;object-fit:cover;border-radius:8px}
+  .card h3{margin:8px 0 4px;font-size:16px;color:var(--muted)}
+  .priceRow{display:flex;justify-content:space-between;align-items:center;gap:8px}
+  .btn{padding:8px 12px;border-radius:10px;border:none;cursor:pointer;font-weight:800}
+  .product-buy{background:linear-gradient(90deg,#34d399,#10b981);color:white}
+  .product-add{background:#fff;border:1px solid rgba(0,0,0,0.06)}
+  .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:999;align-items:center;justify-content:center;padding:20px}
+  .modal{background:white;border-radius:12px;padding:18px;max-width:420px;width:100%}
+  @media (max-width:720px){ .hero{height:200px} .card img{height:220px} .searchWrap{max-width:200px} }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="left">
+    <div id="menuBtn" class="menuBtn">☰</div>
+    <div class="title">Yingfa Risen</div>
+    <div class="searchWrap" title="Search pictures">
+      <input id="searchInput" placeholder="Search ebooks by name..." />
+      <div style="margin-left:8px">🔍</div>
+    </div>
+  </div>
+  <div class="menuRight">
+    <div id="countryBtn" style="display:flex;align-items:center;gap:6px;cursor:pointer">
+      <span id="selectedFlag" class="flag">🇳🇬</span>
+      <span id="selectedCountry" style="font-size:13px">Nigeria</span>
+    </div>
+    <img id="profileImg" class="profile-pic" src="image22.jpg" alt="Profile" title="Profile">
+    <div id="cartBtn" class="cart">🛒 <span class="cartBadge" id="cartCount">0</span></div>
+  </div>
+</header>
+
+<div class="hero">
+  <img id="coverImg" src="cover.gif" alt="Cover">
+  <div class="heroOverlay">
+    <h1>Yingfa Risen</h1>
+    <p style="margin-top:8px;color:#fff">Calming prints — bring nature into your home.</p>
+  </div>
+</div>
+
+<div id="productGrid" class="grid"></div>
+
+<audio id="bgAudio" autoplay loop>
+  <source src="audio.mp3" type="audio/mpeg">
+</audio>
+
+<!-- MENU MODAL (Sign up / Sign in / About / Settings / Contact) -->
+<div id="menuModal" class="overlay">
+  <div class="modal">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <strong>Menu</strong> <button id="closeMenu" class="btn">✕</button>
+    </div>
+    <div style="margin-top:12px;display:flex;flex-direction:column;gap:8px">
+      <button id="openSignUp" class="btn primary">Sign up</button>
+      <button id="openSignIn" class="btn primary">Sign in</button>
+      <button id="openAbout" class="btn">About</button>
+      <button id="openSettings" class="btn">Settings</button>
+      <button id="openContact" class="btn">Contact us</button>
+    </div>
+  </div>
+</div>
+
+<!-- Signup Modal -->
+<div id="signupModal" class="overlay">
+  <div class="modal">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <strong>Sign up</strong> <button class="btn closeModal">✕</button>
+    </div>
+    <div style="margin-top:12px">
+      <label>Profile picture</label>
+      <div style="display:flex;gap:8px;align-items:center;margin-top:8px">
+        <img id="signupPreview" src="" style="width:64px;height:64px;border-radius:50%;object-fit:cover;display:none">
+        <button id="pickProfile" class="btn">Choose picture</button>
+        <input id="profileFile" type="file" accept="image/*" style="display:none">
+      </div>
+      <input id="signupUsername" placeholder="Username" style="width:100%;padding:8px;margin-top:8px">
+      <input id="signupEmail" placeholder="Email" type="email" style="width:100%;padding:8px;margin-top:8px">
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <input id="signupPassword" placeholder="Password" type="password" style="flex:1;padding:8px">
+        <button id="toggleSignupPass" class="btn">Show</button>
+      </div>
+      <input id="signupPet" placeholder="Pet name (for recovery)" style="width:100%;padding:8px;margin-top:8px">
+      <div style="display:flex;gap:8px;margin-top:12px">
+        <button id="doSignup" class="btn primary">Create account</button>
+        <button id="cancelSignup" class="btn">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Signin Modal -->
+<div id="signinModal" class="overlay">
+  <div class="modal">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <strong>Sign in</strong> <button class="btn closeModal">✕</button>
+    </div>
+    <div style="margin-top:12px">
+      <input id="signinEmail" placeholder="Email" type="email" style="width:100%;padding:8px;margin-top:8px">
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <input id="signinPassword" placeholder="Password" type="password" style="flex:1;padding:8px">
+        <button id="toggleSigninPass" class="btn">Show</button>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px">
+        <button id="doSignin" class="btn primary">Sign in</button>
+        <button id="forgotPass" class="btn">Forgot password?</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Forgot / Reset -->
+<div id="forgotModal" class="overlay">
+  <div class="modal">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <strong>Forgot password</strong> <button class="btn closeModal">✕</button>
+    </div>
+    <div style="margin-top:12px">
+      <div>What is your pet name?</div>
+      <input id="petNameInput" placeholder="Pet name" style="width:100%;padding:8px;margin-top:8px">
+      <div style="display:flex;gap:8px;margin-top:10px">
+        <button id="submitPet" class="btn primary">Submit</button>
+        <button id="cancelPet" class="btn">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Password change -->
+<div id="pwChangeModal" class="overlay">
+  <div class="modal">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <strong>Reset password</strong> <button class="btn closeModal">✕</button>
+    </div>
+    <div style="margin-top:12px">
+      <input id="newPassword" placeholder="New password" type="password" style="width:100%;padding:8px;">
+      <div style="display:flex;gap:8px;margin-top:10px">
+        <button id="doChangePw" class="btn primary">Submit</button>
+        <button id="cancelChangePw" class="btn">Cancel</button>
+      </div>
+      <div id="pwMsg" style="margin-top:10px;font-weight:700"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Country -->
+<div id="countryModal" class="overlay">
+  <div class="modal">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <strong>Select country</strong> <button class="btn closeModal">✕</button>
+    </div>
+    <div style="margin-top:10px">
+      <input id="countrySearch" placeholder="Search country..." style="width:100%;padding:8px">
+      <div id="countryList" style="max-height:60vh;overflow:auto;margin-top:8px"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Cart -->
+<div id="cartModal" class="overlay">
+  <div class="modal" style="max-width:720px">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <strong>Your Cart</strong> <button class="btn closeModal">✕</button>
+    </div>
+    <div id="cartItems" style="margin-top:10px;max-height:60vh;overflow:auto"></div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px">
+      <button id="checkoutBtn" class="btn primary">Checkout (WhatsApp)</button>
+      <button id="clearCart" class="btn">Clear cart</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ========== Local product data (edit here to add/remove items) ==========
+   Put product1.jpg .. product10.jpg in the same folder as this index.html.
+   Each product: { id, name, price, imageURL }
+   - Add more items by copying a line and incrementing image filename (product11.jpg, etc.)
+=============================================================== */
+const PRODUCTS = [
+  { id: 'p1', name: 'Healing for kidney', price: 1000, imageURL: 'product1.jpg' },
+  { id: 'p2', name: 'Healing for Ulcers', price: 1000, imageURL: 'product2.jpg' },
+  { id: 'p3', name: 'Healing for Infertility', price: 2000, imageURL: 'product3.jpg' },
+  { id: 'p4', name: 'Healing for HIV', price: 5000, imageURL: 'product4.jpg' },
+  { id: 'p5', name: 'Healing for Hepatitis', price: 4000, imageURL: 'product5.jpg' },
+  { id: 'p6', name: 'Healing for Heart Attack', price: 2000, imageURL: 'product6.jpg' },
+  { id: 'p7', name: 'ED & low sperm count', price: 2000, imageURL: 'product7.jpg' },
+  { id: 'p8', name: 'Healing for diabetes', price: 1000, imageURL: 'product8.jpg' },
+  { id: 'p9', name: 'Healing for Chest & Lungs', price: 1000, imageURL: 'product9.jpg' },
+  { id: 'p10', name: 'Healing for Stroke Attack', price: 1000, imageURL: 'product10.jpg' },
+  { id: 'p11', name: 'Slow Aging Live Long', price: 2000, imageURL: 'product11.jpg' },
+  { id: 'p0', name: 'Healing for Eyes', price: 1000, imageURL: 'product0.jpg' },
+  { id: 'p', name: 'High blood pressure', price: 1000, imageURL: 'product.jpg' },
+  { id: 'p12', name: 'Healing for Infection', price: 3000, imageURL: 'product12.jpg' },
+  { id: 'p13', name: 'Healing for gonorrhea', price: 3000, imageURL: 'product13.jpg' },
+  { id: 'p14', name: 'Healing for Fibroids', price: 3000, imageURL: 'product14.jpg' },
+  { id: 'p15', name: 'Healing for pains', price: 1000, imageURL: 'product15.jpg' },
+  { id: 'p16', name: 'Healing for piles', price: 1000, imageURL: 'product16.jpg' },
+  { id: 'p17', name: 'Healing for Cancers', price: 4000, imageURL: 'product17.jpg' },
+  { id: 'p18', name: 'Healing for HPV', price: 4000, imageURL: 'product18.jpg' },
+  { id: 'p19', name: 'Healing for Herpes', price: 4000, imageURL: 'product19.jpg' },
+];
+/* ============================================================= */
+
+(function(){ /* keep everything in local scope */
+
+/* Helpers for popups (SweetAlert2) */
+function showToast(title, icon='success'){ Swal.fire({toast:true,position:'top-end',title,icon,showConfirmButton:false,timer:2200,timerProgressBar:true}); }
+function showPopup(title, text, icon='info'){ Swal.fire({title,text,icon,confirmButtonColor:'#16a34a'}); }
+
+/* DOM refs */
+const productGrid = document.getElementById('productGrid');
+const searchInput = document.getElementById('searchInput');
+const profileImg = document.getElementById('profileImg');
+const cartCountEl = document.getElementById('cartCount');
+
+/* LocalStorage keys */
+const LS_USER = 'NH_USER_v1';
+const LS_CART = 'NH_CART_v1';
+let currentUser = JSON.parse(localStorage.getItem(LS_USER) || 'null');
+let cart = JSON.parse(localStorage.getItem(LS_CART) || '[]');
+
+function saveUser(){ localStorage.setItem(LS_USER, JSON.stringify(currentUser)); }
+function saveCart(){ localStorage.setItem(LS_CART, JSON.stringify(cart)); updateCartUI(); }
+function updateCartUI(){ cartCountEl.textContent = cart.length || 0; }
+
+if(currentUser && currentUser.profilePicDataURL) profileImg.src = currentUser.profilePicDataURL;
+updateCartUI();
+
+/* safe escape for attributes */
+function escapeHtml(s){ return String(s).replace(/"/g,'&quot;'); }
+
+/* Render products from local PRODUCTS array */
+function renderProducts(items){
+  productGrid.innerHTML = '';
+  if(!items || items.length === 0){
+    productGrid.innerHTML = '<div style="text-align:center;color:#666;padding:20px;">No products yet 🌱</div>';
+    return;
+  }
+  items.forEach(p=>{
+    const el = document.createElement('div');
+    el.className = 'card';
+    el.innerHTML = `
+      <img src="${escapeHtml(p.imageURL)}" alt="${escapeHtml(p.name)}">
+      <h3>${escapeHtml(p.name)}</h3>
+      <div class="priceRow">
+        <div style="font-weight:800">₦${Number(p.price).toFixed(2)}</div>
+        <div style="display:flex;gap:8px">
+          <button class="btn product-add" data-name="${escapeHtml(p.name)}" data-price="${p.price}">Add to Cart</button>
+          <button class="btn product-buy" data-name="${escapeHtml(p.name)}">Buy Now</button>
+        </div>
+      </div>`;
+    productGrid.appendChild(el);
+  });
+}
+
+/* initial render */
+renderProducts(PRODUCTS);
+
+/* Search */
+searchInput.addEventListener('input', ()=> {
+  const q = searchInput.value.trim().toLowerCase();
+  document.querySelectorAll('.card').forEach(c=>{
+    c.style.display = c.textContent.toLowerCase().includes(q) ? 'block' : 'none';
+  });
+});
+
+/* Profile picture change (local only) */
+profileImg.addEventListener('click', ()=>{
+  const f = document.createElement('input'); f.type='file'; f.accept='image/*';
+  f.onchange = e=>{
+    const file = e.target.files[0]; if(!file) return;
+    const r = new FileReader();
+    r.onload = ()=> {
+      const dataUrl = r.result;
+      profileImg.src = dataUrl;
+      currentUser = currentUser || {};
+      currentUser.profilePicDataURL = dataUrl;
+      saveUser();
+      showToast('Profile picture updated locally 🌿','success');
+    };
+    r.readAsDataURL(file);
+  };
+  f.click();
+});
+
+/* Menu open/close and modal wiring */
+const overlayEls = document.querySelectorAll('.overlay');
+function closeAllModals(){ overlayEls.forEach(o=>o.style.display='none'); }
+document.getElementById('menuBtn').addEventListener('click', ()=> document.getElementById('menuModal').style.display='flex');
+document.getElementById('closeMenu').addEventListener('click', ()=> closeAllModals());
+document.querySelectorAll('.closeModal').forEach(b=> b.addEventListener('click', ()=> closeAllModals()));
+document.getElementById('openSignUp').addEventListener('click', ()=> { closeAllModals(); document.getElementById('signupModal').style.display='flex'; });
+document.getElementById('openSignIn').addEventListener('click', ()=> { closeAllModals(); document.getElementById('signinModal').style.display='flex'; });
+document.getElementById('openAbout').addEventListener('click', ()=> { closeAllModals(); window.location.href='about.html'; });
+document.getElementById('openSettings').addEventListener('click', ()=> { closeAllModals(); toggleTheme(); });
+document.getElementById('openContact').addEventListener('click', ()=> { closeAllModals(); const msg=encodeURIComponent('Hello Nature Heals, I need help.'); window.open('https://wa.me/15813419686?text='+msg,'_blank'); });
+
+/* Theme toggle */
+function toggleTheme(){
+  const mode = localStorage.getItem('NH_MODE') || 'light';
+  const newMode = mode==='light' ? 'dark' : 'light';
+  if(newMode==='dark'){
+    document.documentElement.style.setProperty('--bg','#071418');
+    document.documentElement.style.setProperty('--card','#0b1b1a');
+    document.documentElement.style.setProperty('--muted','#dff6ec');
+    localStorage.setItem('NH_MODE','dark');
+  }else{
+    document.documentElement.style.setProperty('--bg','#f6fff6');
+    document.documentElement.style.setProperty('--card','#ffffff');
+    document.documentElement.style.setProperty('--muted','#234e3a');
+    localStorage.setItem('NH_MODE','light');
+  }
+  showToast('Theme set to ' + newMode,'info');
+}
+
+/* Signup / Signin local handling */
+document.getElementById('pickProfile').addEventListener('click', ()=> document.getElementById('profileFile').click());
+document.getElementById('profileFile').addEventListener('change', (e)=> {
+  const file = e.target.files[0]; if(!file) return;
+  const r = new FileReader(); r.onload = ()=> { document.getElementById('signupPreview').src = r.result; document.getElementById('signupPreview').style.display='block'; document.getElementById('signupPreview').dataset.data = r.result; }; r.readAsDataURL(file);
+});
+document.getElementById('toggleSignupPass').addEventListener('click', ()=> { const p = document.getElementById('signupPassword'); p.type = p.type === 'password' ? 'text' : 'password'; document.getElementById('toggleSignupPass').textContent = p.type==='password'?'Show':'Hide'; });
+
+document.getElementById('doSignup').addEventListener('click', ()=> {
+  const username = document.getElementById('signupUsername').value.trim();
+  const email = document.getElementById('signupEmail').value.trim();
+  const pw = document.getElementById('signupPassword').value;
+  const pet = document.getElementById('signupPet').value.trim();
+  const pic = document.getElementById('signupPreview').dataset?.data || null;
+  if(!email || !pw){ showPopup('Missing details','Please provide email and password.','warning'); return; }
+  const usersLocal = JSON.parse(localStorage.getItem('NH_LOCAL_USERS') || '[]');
+  if(usersLocal.find(u=>u.email===email)){ showPopup('Email exists','Email already exists. Please sign in.','warning'); return; }
+  usersLocal.push({email, username, password:pw, pet, profilePicDataURL: pic});
+  localStorage.setItem('NH_LOCAL_USERS', JSON.stringify(usersLocal));
+  currentUser = {email, username, profilePicDataURL: pic, pet};
+  saveUser();
+  closeAllModals();
+  showPopup('Account Created','You are now signed in locally.','success');
+  updateCartUI();
+});
+
+document.getElementById('toggleSigninPass').addEventListener('click', ()=> { const p=document.getElementById('signinPassword'); p.type=p.type==='password'?'text':'password'; document.getElementById('toggleSigninPass').textContent = p.type==='password'?'Show':'Hide'; });
+
+document.getElementById('doSignin').addEventListener('click', ()=> {
+  const email = document.getElementById('signinEmail').value.trim();
+  const pw = document.getElementById('signinPassword').value;
+  const usersLocal = JSON.parse(localStorage.getItem('NH_LOCAL_USERS') || '[]');
+  const u = usersLocal.find(x=>x.email===email && x.password===pw);
+  if(!u){ showPopup('Login Failed','Invalid credentials','error'); return; }
+  currentUser = {email:u.email, username:u.username, profilePicDataURL:u.profilePicDataURL, pet:u.pet};
+  saveUser();
+  closeAllModals();
+  if(currentUser.profilePicDataURL) profileImg.src = currentUser.profilePicDataURL;
+  showToast('Signed in as ' + (u.username || u.email),'success');
+});
+
+/* Forgot / Reset */
+document.getElementById('forgotPass').addEventListener('click', ()=> { closeAllModals(); document.getElementById('forgotModal').style.display='flex'; });
+document.getElementById('cancelPet').addEventListener('click', ()=> closeAllModals());
+document.getElementById('submitPet').addEventListener('click', ()=> {
+  const pet = document.getElementById('petNameInput').value.trim();
+  const usersLocal = JSON.parse(localStorage.getItem('NH_LOCAL_USERS') || '[]');
+  const u = usersLocal.find(x=>x.pet && x.pet.toLowerCase()===pet.toLowerCase());
+  if(!u){ showPopup('Not found','No user found with that pet name','error'); return; }
+  closeAllModals(); document.getElementById('pwChangeModal').style.display='flex'; document.getElementById('pwChangeModal').dataset.target = u.email;
+});
+document.getElementById('doChangePw').addEventListener('click', ()=> {
+  const newpw = document.getElementById('newPassword').value;
+  const target = document.getElementById('pwChangeModal').dataset.target;
+  if(!newpw){ document.getElementById('pwMsg').textContent='Please provide a new password.'; return; }
+  const usersLocal = JSON.parse(localStorage.getItem('NH_LOCAL_USERS') || '[]');
+  const idx = usersLocal.findIndex(x=>x.email===target);
+  if(idx>-1){ usersLocal[idx].password = newpw; localStorage.setItem('NH_LOCAL_USERS', JSON.stringify(usersLocal)); document.getElementById('pwMsg').textContent='Password changed successfully.'; setTimeout(()=> closeAllModals(),800); showToast('Password changed successfully','success'); }
+});
+
+/* Country picker short list (expandable) */
+const COUNTRIES = [
+  {code:'NG', name:'Nigeria', flag:'🇳🇬'}, {code:'US', name:'United States', flag:'🇺🇸'},
+  {code:'GB', name:'United Kingdom', flag:'🇬🇧'}, {code:'CA', name:'Canada', flag:'🇨🇦'},
+  {code:'IN', name:'India', flag:'🇮🇳'}, {code:'FR', name:'France', flag:'🇫🇷'}
+];
+function openCountryPicker(){
+  document.getElementById('countryModal').style.display='flex';
+  const list = document.getElementById('countryList'); list.innerHTML='';
+  COUNTRIES.forEach(c=>{
+    const row=document.createElement('div'); row.style.padding='8px'; row.style.cursor='pointer'; row.style.display='flex'; row.style.gap='8px'; row.style.alignItems='center';
+    row.innerHTML = `<div style="font-size:20px">${c.flag}</div><div style="flex:1">${c.name}</div>`;
+    row.addEventListener('click', ()=> { localStorage.setItem('NH_COUNTRY_v1', JSON.stringify(c)); document.getElementById('selectedFlag').textContent=c.flag; document.getElementById('selectedCountry').textContent=c.name; closeAllModals(); });
+    list.appendChild(row);
+  });
+}
+document.getElementById('countryBtn').addEventListener('click', openCountryPicker);
+
+/* Cart features (localStorage) */
+document.getElementById('cartBtn').addEventListener('click', ()=> { document.getElementById('cartModal').style.display='flex'; renderCartItems(); });
+function renderCartItems(){
+  const container = document.getElementById('cartItems'); container.innerHTML='';
+  if(cart.length===0){ container.innerHTML = '<div style="padding:12px;color:#666">Your cart is empty.</div>'; return; }
+  cart.forEach((item, idx) => {
+    const row = document.createElement('div');
+    row.style.display='flex'; row.style.alignItems='center'; row.style.gap='8px'; row.style.padding='8px 0'; row.style.borderBottom='1px solid rgba(0,0,0,0.04)';
+    row.innerHTML = `<div style="flex:1"><div style="font-weight:800">${item.name}</div><div style="color:#666">₦${Number(item.price).toFixed(2)}</div></div><button data-idx="${idx}" class="btn removeItem" style="background:#ef4444;color:#fff">Remove</button>`;
+    container.appendChild(row);
+  });
+}
+document.addEventListener('click', (e)=>{
+  if(e.target.classList.contains('product-add')){
+    const name = e.target.dataset.name;
+    const price = Number(e.target.dataset.price || 0);
+    cart.push({name, price});
+    saveCart();
+    showToast(`${name} added to cart`,'success');
+  }
+  if(e.target.classList.contains('product-buy')){
+    const name = e.target.dataset.name;
+    const email = (currentUser && currentUser.email) ? currentUser.email : 'guest@example.com';
+    const msg = encodeURIComponent(`Hello Nature Heals, I want to buy "${name}". My email: ${email}. How do I make payment?`);
+    window.open(`https://wa.me/15813419686?text=${msg}`, '_blank');
+  }
+  if(e.target.classList.contains('removeItem')){
+    const idx = Number(e.target.dataset.idx);
+    cart.splice(idx,1); saveCart(); renderCartItems();
+  }
+});
+document.getElementById('clearCart').addEventListener('click', ()=>{ cart = []; saveCart(); renderCartItems(); });
+document.getElementById('checkoutBtn').addEventListener('click', ()=> {
+  if(cart.length===0){ showPopup('Cart empty','Your cart is empty','info'); return; }
+  const names = cart.map(i=>i.name).join(', ');
+  const email = (currentUser && currentUser.email) ? currentUser.email : 'guest@example.com';
+  const msg = encodeURIComponent(`Hello Nature Heals, I want to checkout: ${names}. My email: ${email}. How do I pay?`);
+  window.open(`https://wa.me/15813419686?text=${msg}`, '_blank');
+});
+
+/* Close overlays on outside click */
+document.querySelectorAll('.overlay').forEach(ov => ov.addEventListener('click', (e) => { if(e.target === ov) ov.style.display = 'none'; }));
+
+/* Mobile audio autoplay helper */
+const bgAudio = document.getElementById('bgAudio');
+document.body.addEventListener('click', ()=> { if(bgAudio.paused) bgAudio.play().catch(()=>{}); });
+
+/* expose helpers */
+window.showToast = showToast; window.showPopup = showPopup;
+
+})(); /* end local scope */
+</script>
+</body>
+</html>
